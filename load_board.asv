@@ -18,7 +18,7 @@ switch get(get(hBtnGrp,'SelectedObject'),'Tag')
     case 'ub'
         [err_code, varargout{1}, varargout{2}] = own_board();
     case 'gb'
-        [err_code, varargout{1}, varargout{2}] = generic_board(10,10);
+        [err_code, varargout{1}, varargout{2}] = generic_board();
     otherwise
         err_code = -1;
 end
@@ -30,7 +30,7 @@ end
 end
 
 
-function [err_code, varargout] = own_board()
+function [err_code, size_arr, act_arr] = own_board()
 %OWN_BOARD brings in the user created board for use in the game.
 %   Opens the file containing the board specs, reads them into a size array
 %   and action array, then uses the size array to determine the positions
@@ -53,9 +53,9 @@ rec_lin = textscan(fid', '%f%f%f%f%f', 'CollectOutput', 1);
 fclose(fid);
 
 % Brackets are for readability
-size_arr = rec_lin{1}(:, [1:4]);
+size_arr = rec_lin(:, [1:4]);
 [sizex, sizey] = size(size_arr);
-act_arr = rec_lin{1}(:,5);
+act_arr = rec_lin(:,5);
 
 % Layout board for further placement of tiles
 board_layout();
@@ -65,37 +65,32 @@ color_mat = [0.2 0.2 0.2];
 
 % Use rectangles
 for (index = 1:sizex)
-rectangle('Position',size_arr(index,:), 'FaceColor', color_mat,...
+rectangle('Position',size_arr(index), 'FaceColor', color_mat,...
         'EdgeColor', [0.9 0.1 0.1], 'LineWidth', 2);
 end
-
-% Assign outputs now that everything is set up
-err_code = 0;
-varargout{1} = size_arr;
-varargout{2} = act_arr;
 
 end
 
 function [err_code, size_arr, act_arr] = generic_board(x_size, y_size)
 %GENERIC_BOARD brings up a generic board for use in the game.
 %   An x and y size are passed in. Board spaces are then layed out in a
-%   closed square.
+%   back and forth pattern according to these sizes.
 %   EX:
-%       generic_board(10,10)
+%       generic_board()
+% Layout board for further placement of tiles
 
 size(size_arr);
 act_arr = rec_lin(:,5);
 
-% Layout board for further placement of tiles
 fig = board_layout();
-final_pos = 1 + (10* (x_size-1));
 
+left = 1;
 % Iterate through columns
 for (y_rectangle = 1:y_size)
     % Calc the column space
     y_pos = 1 + (10* (y_rectangle-1));
-    % Place a full row of x_size if satisfied by mod y_size.
-    if (~mod(y_pos,y_size))
+    % Place a full row of x_size if satisfied by mod 3.
+    if (~mod(y_pos,3))
         % Iterate through row positions to place rectangles
         for (x_rectangle = 1:x_size)
             % Calc the row space
@@ -103,10 +98,15 @@ for (y_rectangle = 1:y_size)
             % Place a predefined rectangle at the given pos
             gen_rect(x_pos, y_pos);
         end
+        % Change the side to place rectangles on
+        left = ~left;
     else
-        % Place a full column otherwise
-        gen_rect(1, y_pos);
-        gen_rect(final_pos, y_pos);
+        % Place a singular rectangle for rows of non mod 3
+        if (left == 1)
+            gen_rect(1, y_pos);
+        else
+            gen_rect(x_pos, y_pos);
+        end
     end
 end
 
