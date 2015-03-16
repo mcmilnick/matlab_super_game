@@ -38,7 +38,7 @@ function [err_code, player_rolls] = own_die(player_num, load_die_name)
 err_code = -1;
 
 % Open file
-fid = fopen(load_die_name);
+fid = fopen('C:\Users\Nick\Desktop\su classes\ecegre\ecegre 1000\final_proj\folder\dice_roll_1.txt');
 if (fid == -1)
     fprintf('The die file could not open properly.\n');
     return;

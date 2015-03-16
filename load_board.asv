@@ -1,4 +1,4 @@
-function [err_code, varargout] = load_board(board_radio, board_file_name)
+function [err_code, varargout] = load_board(board_radio)
 %LOAD_BOARD takes the user input and either loads a custom board or the
 %generic one. It returns an error code to show if loaded properly. This
 %allows us to give the user choices again. The size array and action array
@@ -16,7 +16,7 @@ function [err_code, varargout] = load_board(board_radio, board_file_name)
 % Grabs from gui handle.          
 switch get(get(board_radio,'SelectedObject'),'Tag')
     case 'ub'
-        [err_code, varargout{1}, varargout{2}] = own_board(board_file_name);
+        [err_code, varargout{1}, varargout{2}] = own_board();
     case 'gb'
         [err_code, varargout{1}, varargout{2}] = generic_board(10,10);
     otherwise
@@ -26,7 +26,7 @@ end
 end
 
 
-function [err_code, varargout] = own_board(board_file_name)
+function [err_code, varargout] = own_board(board_file)
 %OWN_BOARD brings in the user created board for use in the game.
 %   Opens the file containing the board specs which was selected in the
 %   gui, then reads them into a size array and action array, uses the size
@@ -37,7 +37,7 @@ function [err_code, varargout] = own_board(board_file_name)
 
 err_code = -1;
 
-fid = fopen(board_file_name);
+fid = fopen(board_file);
 if (fid == -1)
     fprintf('The board file could not open properly.\n');
     return;
