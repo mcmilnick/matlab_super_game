@@ -1,4 +1,4 @@
-function [err_code, varargout] = load_board(hBtnGrp)
+function [err_code, varargout] = load_board(board_radio)
 %LOAD_BOARD takes the user input and either loads a custom board or the
 %generic one. It returns an error code to show if loaded properly. This
 %allows us to give the user choices again. The size array and action array
@@ -13,18 +13,14 @@ function [err_code, varargout] = load_board(hBtnGrp)
 % under five options, but it is better Matlab style.
 
 % Look for the current event from board choice callback function
-% Grabs from gui handle.
-switch get(get(hBtnGrp,'SelectedObject'),'Tag')
+% Grabs from gui handle.          
+switch get(get(board_radio,'SelectedObject'),'Tag')
     case 'ub'
         [err_code, varargout{1}, varargout{2}] = own_board();
     case 'gb'
         [err_code, varargout{1}, varargout{2}] = generic_board(10,10);
     otherwise
         err_code = -1;
-end
-
-if (err_code == -1)
-    fprintf('Board did not load properly.\n');
 end
 
 end
@@ -34,7 +30,7 @@ function [err_code, varargout] = own_board()
 %OWN_BOARD brings in the user created board for use in the game.
 %   Opens the file containing the board specs, reads them into a size array
 %   and action array, then uses the size array to determine the positions
-%   of the shapes.
+%   of the shapes. They are placed on the main gui screen.
 %   EX:
 %       own_board()
 
@@ -44,7 +40,7 @@ err_code = -1;
 test_folder_str = 'C:\Users\Nick\Desktop\su classes\ecegre\ecegre 1000\final_proj\folder\';
 fid = fopen([test_folder_str 'board_1.txt']);
 if (fid == -1)
-    fprintf('The file could not open properly.');
+    fprintf('The board file could not open properly.\n');
     return;
 end
 
@@ -57,13 +53,10 @@ fclose(fid);
 size_arr = rec_lin{1}(:, [1:4]);
 [sizex, sizey] = size(size_arr);
 act_arr = rec_lin{1}(:,5);
-
-% Layout board for further placement of tiles
-board_layout();
-
+          
 % Choose color scheme
 color_mat = [0.2 0.2 0.2];
-
+          
 % Use rectangles
 for (index = 1:sizex)
 rectangle('Position',size_arr(index,:), 'FaceColor', color_mat,...
@@ -80,7 +73,7 @@ end
 function [err_code, varargout] = generic_board(x_size, y_size)
 %GENERIC_BOARD brings up a generic board for use in the game.
 %   An x and y size are passed in. Board spaces are then layed out in a
-%   closed square.
+%   closed square. They are placed on the main gui screen.
 %   EX:
 %       generic_board(10,10)
 
@@ -91,9 +84,6 @@ err_code = -1;
 squares_size = (x_size *2) + ((x_size-2) *2)
 size_arr = zeros(squares_size, 4);
 act_arr = zeros(squares_size, 1);
-
-% Layout board for further placement of tiles
-fig = board_layout();
 
 % Determine the size of the squares
 sq_size = 10;
