@@ -22,7 +22,7 @@ axis off;
 
 hBtnGrp = uibuttongroup('Visible','on',...
               'Position',[0 .8 .1 1],...
-              'SelectionChangedFcn',@button_callback,...
+              'SelectionChangedFcn',@button2_callback,...
               'Units','Normalized');
           
 hBtnGrp2 = uibuttongroup('Visible','on',...
@@ -46,7 +46,6 @@ hEdit3 = uicontrol('Style','edit', 'Position',[300 (scrsz(4)- 125) 120 20], 'Str
 hEdit4 = uicontrol('Style','edit', 'Position',[300 (scrsz(4)- 150) 120 20], 'String','Player 4');
 set(game_gui, 'Visible','on')
 
-uiwait(gcf);
 button_callback(hEdit1, hEdit2, hEdit3, hEdit4, hBtnGrp, hBtnGrp2);
 
 end
@@ -62,7 +61,6 @@ function button_callback(hEdit1, hEdit2, hEdit3, hEdit4, hBtnGrp, hBtnGrp2)
 % The player names also have an edit styled gui, and therefore we can grab
 % the strings.
 
-uiresume(gcf);
 % Call main function to utilize the buttons
 [player_names] = get_user_names(hEdit1,hEdit2, hEdit3, hEdit4);
 

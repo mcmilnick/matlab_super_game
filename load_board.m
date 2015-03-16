@@ -38,12 +38,13 @@ function [err_code, varargout] = own_board()
 %   EX:
 %       own_board()
 
+err_code = -1;
+
 % TBD: Ask for the directory, then the file, then open
 test_folder_str = 'C:\Users\Nick\Desktop\su classes\ecegre\ecegre 1000\final_proj\folder\';
 fid = fopen([test_folder_str 'board_1.txt']);
 if (fid == -1)
     fprintf('The file could not open properly.');
-    err_code = -1;
     return;
 end
 
@@ -76,41 +77,71 @@ varargout{2} = act_arr;
 
 end
 
-function [err_code, size_arr, act_arr] = generic_board(x_size, y_size)
+function [err_code, varargout] = generic_board(x_size, y_size)
 %GENERIC_BOARD brings up a generic board for use in the game.
 %   An x and y size are passed in. Board spaces are then layed out in a
 %   closed square.
 %   EX:
 %       generic_board(10,10)
 
-size(size_arr);
-act_arr = rec_lin(:,5);
+% Define in case we fail in the function.
+err_code = -1;
+
+% Get the number of squares total to allocate the size and action arrays.
+squares_size = (x_size *2) + ((x_size-2) *2)
+size_arr = zeros(squares_size, 4);
+act_arr = zeros(squares_size, 1);
 
 % Layout board for further placement of tiles
 fig = board_layout();
-final_pos = 1 + (10* (x_size-1));
 
-% Iterate through columns
-for (y_rectangle = 1:y_size)
-    % Calc the column space
-    y_pos = 1 + (10* (y_rectangle-1));
-    % Place a full row of x_size if satisfied by mod y_size.
-    if (~mod(y_pos,y_size))
-        % Iterate through row positions to place rectangles
-        for (x_rectangle = 1:x_size)
-            % Calc the row space
-            x_pos = 1 + (10* (x_rectangle-1));
-            % Place a predefined rectangle at the given pos
-            gen_rect(x_pos, y_pos);
-        end
-    else
-        % Place a full column otherwise
-        gen_rect(1, y_pos);
-        gen_rect(final_pos, y_pos);
-    end
+% Determine the size of the squares
+sq_size = 10;
+
+% Using shapes and groupings of rectangles is appealing but takes longer to
+% access a size array and action array for each position.
+% Place rectangles in an outline of a square going counterclockwise.
+% The current rect is saved to size_arr everytime along with a random
+% action so that we can map out the squares.
+count = 1;
+for(R = 1:y_size)
+    y_pos = (y_size*10) - (sq_size* (R-1))-9;
+    gen_rect(1, y_pos);
+    % Store size for later token movement
+    size_arr(count,:) = [1, y_pos, sq_size, sq_size];
+    % Store action for mapping to token placment
+    act_arr(count) = randi(10);
+    count = count + 1;
+end
+for(R = 1:(x_size-1))
+    x_pos = 1 + (sq_size* R);
+    y_pos = y_size - 9;
+    gen_rect(x_pos, y_pos);
+    size_arr(count,:) = [x_pos, y_pos sq_size, sq_size];
+    act_arr(count) = randi(10);
+    count = count + 1;
+end
+for (R = 1:(y_size-1))
+    y_pos = (y_size-9) + (sq_size* R);
+    x_pos = (x_size*10)-9;
+    gen_rect(x_pos, y_pos);
+    size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
+    act_arr(count) = randi(10);
+    count = count + 1;
+end
+for (R = 1:(x_size-2))
+    x_pos = (x_size*10)-(sq_size* R)-9;
+    y_pos = (y_size*10)-9;
+    gen_rect(x_pos, y_pos);
+    size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
+    act_arr(count) = randi(10);
+    count = count + 1;
 end
 
-err_code = 1;
+% Assign outputs now that everything is set up
+err_code = 0;
+varargout{1} = size_arr;
+varargout{2} = act_arr;
 
 end
 
