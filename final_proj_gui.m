@@ -28,7 +28,6 @@ axis off;
 % be accessed to find which one was chosen.
 board_radio = uibuttongroup('Visible','on',...
               'Position',[.1 .8 .1 1],...
-              'SelectionChangedFcn',@board_choice_callback,...
               'Units','Normalized');
       
 % Create radio buttons for choosing the board. There is a generic and user
@@ -42,8 +41,7 @@ uicontrol('Style','Radio', 'Parent',board_radio, 'HandleVisibility','off',...
 % Create a button group for the die so they are grouped together and can be
 % accessed to find which one was chosen.
 die_radio = uibuttongroup('Visible','on',...
-                  'Position',[.2 .8 .1 1],...
-                  'SelectionChangedFcn',@die_choice_callback);
+                  'Position',[.2 .8 .1 1]);
               
 % Create radio buttons for choosing the die. There is a generic and user
 % die mode
@@ -75,12 +73,16 @@ board_file = uicontrol('Style','pushbutton', 'String','Select Board File', 'Posi
 die_file = uicontrol('Style','pushbutton', 'String','Select Die File', 'Position',...
     [(scrsz(4)*.36) (scrsz(4)-200) 90 25],'Callback',{@die_load_callback})
 
+% Select directory for tokens.
+pic_file = uicontrol('Style','pushbutton', 'String','Select pic File', 'Position',...
+    [(scrsz(4)*.03) (scrsz(4)-200) 90 25],'Callback',{@token_in_callback})
+
 % Bring up the button to start the game. Has an associated callback
 % function. This passes handles when the button is pressed to go to the
 % game initialization function.
 uicontrol('Style','pushbutton', 'String','Start Game', 'Position',...
     [(scrsz(3)/2) 100 60 25],'Callback',{@game_setup_callback, name_1,...
-    name_2, name_3, name_4, board_radio, die_radio, board_file, die_file})
+    name_2, name_3, name_4, board_radio, die_radio, board_file, die_file, pic_file})
           
 % Makes the gui visible now that it is set up.
 set(game_gui, 'Visible','on')
@@ -97,7 +99,7 @@ end
 % The player names also have an edit styled gui, and therefore we can grab
 % the strings.
 function game_setup_callback(src, ev, name_1, name_2, name_3, name_4,...
-    board_radio, die_radio, board_file, die_file)
+    board_radio, die_radio, board_file, die_file, pic_file)
 
 % Turn off visibility from the buttons so  users can't conflict.
 set(board_radio, 'Visible','off');
@@ -105,6 +107,7 @@ set(die_radio, 'Visible','off');
 set(src,'Visible','off');
 set(board_file,'Visible','off');
 set(die_file,'Visible','off');
+set(pic_file,'Visible','off');
 
 % Call main function to utilize the buttons
 [player_names, length_play] = get_user_names(name_1,name_2, name_3, name_4);
@@ -145,7 +148,14 @@ if (err_code == -1)
     reset_gui();
 end
 
-%TBD - Insert tokens
+%Insert tokens
+[err_code, fig_handle] = import_token(pic_file, player_names, length_play);
+if (err_code == -1)
+    fprintf('Tokens did not load properly.\n');
+    reset_gui();
+end
+
+% Start the game
 start_game(player_names, size_arr, act_arr, die_rolls);
 
 end
@@ -178,6 +188,15 @@ function die_load_callback(src,ev)
 die_full = [die_dir die_file];
 set(src, 'UserData', die_full)
 
+end
+
+function token_in_callback(src, ev)
+%DIE_LOAD_CALLBACK grabs the pushbutton handle, allows the user to
+%specify the die to use, then stores this as a string in the UserData
+%section of the UI Control group. This is in essence one large struct for
+%the pushbutton which we are commandeering.
+pic_dur = uigetdir;
+set(src, 'UserData', pic_dur)
 end
 
 %**********************************************************************
