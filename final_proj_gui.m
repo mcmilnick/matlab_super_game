@@ -26,8 +26,7 @@ axis off;
 
 % Create a button group for the board so they are grouped together and can
 % be accessed to find which one was chosen.
-board_radio = uibuttongroup('Visible','on',...
-              'Position',[.1 .8 .1 1],...
+board_radio = uibuttongroup('Visible','on', 'Position',[.1 .8 .1 1],...
               'Units','Normalized');
       
 % Create radio buttons for choosing the board. There is a generic and user
@@ -40,8 +39,7 @@ uicontrol('Style','Radio', 'Parent',board_radio, 'HandleVisibility','off',...
 
 % Create a button group for the die so they are grouped together and can be
 % accessed to find which one was chosen.
-die_radio = uibuttongroup('Visible','on',...
-                  'Position',[.2 .8 .1 1]);
+die_radio = uibuttongroup('Visible','on','Position',[.2 .8 .1 1]);
               
 % Create radio buttons for choosing the die. There is a generic and user
 % die mode
@@ -116,14 +114,25 @@ set(pic_file,'Visible','off');
 % which is generally a bad idea unless you use pointers... I don't like
 % Matlab pointers.
 
+% Set board file name
+board_file_name = board_file.UserData;
+% Set die file name
+die_file_name = die_file.UserData;
+% Error check for 'own' buttons pressed and directories not set
+ub_check = strcmp(get(get(board_radio,'SelectedObject'),'Tag'),'ub');
+ud_check = strcmp(get(get(die_radio,'SelectedObject'),'Tag'),'ud');
+if (isempty(board_file_name) && ub_check)
+    reset_gui();
+elseif (isempty(die_file_name) && ud_check)
+    reset_gui();
+end
+
 % Disable the names to lock them
 set(name_1, 'enable', 'off')
 set(name_2, 'enable', 'off')
 set(name_3, 'enable', 'off')
 set(name_4, 'enable', 'off')
 
-% Set board file name
-board_file_name = board_file.UserData;
 % Based on the user choice, load the board. The error code is returned to
 % indicate a load error. -1 corresponds to an error. Do the same for die.
 [err_code, size_arr, act_arr] = load_board(board_radio, board_file_name);
@@ -133,8 +142,6 @@ if (err_code == -1)
     reset_gui();
 end
 
-% Set die file name
-die_file_name = die_file.UserData;
 % The die function returns a cell matrix with the die rolls. There are a
 % max of four player die groups. If a file is read in with less than four
 % columns, the rest are blank. This means if more than four players give a
@@ -158,11 +165,6 @@ end
 % Start the game
 start_game(player_names, size_arr, act_arr, die_rolls);
 
-end
-
-%TBD - comment
-function start_game(player_names, size_arr, act_arr, die_rolls)
-%TBD - start game
 end
 
 %**********************************************************************

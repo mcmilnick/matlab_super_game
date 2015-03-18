@@ -3,7 +3,9 @@ function [err_code, fig_handle] = import_token(pic_file, player_names, num_playe
 err_code = -1;
 
 % Search picture directory for all jpg files. Store them in a struct.
-cd(pic_file.UserData);
+if (~isempty(pic_file.UserData))
+    cd(pic_file.UserData);
+end
 pic_players = dir('*.jpg');
 % Get the number of pictures
 pic_len = length(pic_players);
