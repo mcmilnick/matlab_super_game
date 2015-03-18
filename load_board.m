@@ -52,14 +52,31 @@ fclose(fid);
 size_arr = rec_lin{1}(:, [1:4]);
 [sizex, sizey] = size(size_arr);
 act_arr = rec_lin{1}(:,5);
-          
+string_arr = {'Jump 2'; 'Jump 4'; 'Go to Finish'; 'Back 2'; 'Back 4';...
+    'Back to Start'; 'Turn(-1)'; 'Roll';...
+    'Turn(-1) Back 3'; 'Roll Jump 3'};
+
 % Choose color scheme
 color_mat = [0.2 0.2 0.2];
-          
+% Updated screen size
+scrsz = get(0,'ScreenSize');
 % Use rectangles
 for (index = 1:sizex)
-rectangle('Position',size_arr(index,:), 'FaceColor', color_mat,...
+    rectangle('Position',size_arr(index,:), 'FaceColor', color_mat,...
         'EdgeColor', [0.9 0.1 0.1], 'LineWidth', 2);
+    
+    % Place text
+    x_pos = (size_arr(index,1) + scrsz(4)/420);
+    y_pos = (size_arr(index,2) + scrsz(3)/200);
+    if (act_arr(index) == 0)
+        text(x_pos, y_pos, 'Start', 'color', 'y',  'FontName', 'Verdana');
+    elseif (act_arr(index) == 100)
+        text(x_pos, y_pos, 'Finish', 'color', 'y', 'FontName', 'Verdana');
+    else
+        [one_str, two_str] = strtok(string_arr(abs(act_arr(index))),' ');
+        text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+            'y', 'FontName', 'Verdana');
+    end
 end
 
 % Assign outputs now that everything is set up
@@ -86,6 +103,10 @@ act_arr = zeros(squares_size, 1);
 
 % Determine the size of the squares
 sq_size = 10;
+scrsz = get(0,'ScreenSize');
+string_arr = {'+2'; '+4'; 'Fin'; '-2'; '-4';...
+    'To Start'; '-Turn'; 'Roll';...
+    '-Turn -3'; 'Roll +3'};
 
 % Using shapes and groupings of rectangles is appealing but takes longer to
 % access a size array and action array for each position.
@@ -94,13 +115,23 @@ sq_size = 10;
 % action so that we can map out the squares.
 count = 1;
 for(R = 1:y_size)
-    y_pos = (y_size*10) - (sq_size* (R-1))-9;
+    y_pos = (y_size*sq_size) - (sq_size* (R-1))-9;
     gen_rect(1, y_pos);
     % Store size for later token movement
     size_arr(count,:) = [1, y_pos, sq_size, sq_size];
     % Store action for mapping to token placment
     act_arr(count) = randi(10);
     count = count + 1;
+    
+    x_pos = 1 + (scrsz(4)/840);
+    y_pos = y_pos + (scrsz(4)/210);
+    if (R == 1)
+        text(x_pos, y_pos, 'Start', 'color', 'b',  'FontName', 'Verdana');
+    else
+        [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+        text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+            'b', 'FontName', 'Verdana');
+    end
 end
 for(R = 1:(x_size-1))
     x_pos = 1 + (sq_size* R);
@@ -109,22 +140,44 @@ for(R = 1:(x_size-1))
     size_arr(count,:) = [x_pos, y_pos sq_size, sq_size];
     act_arr(count) = randi(10);
     count = count + 1;
+    
+    x_pos = x_pos + (scrsz(4)/840);
+    y_pos = y_pos + (scrsz(4)/210);
+    [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+    text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+        'b', 'FontName', 'Verdana');
 end
 for (R = 1:(y_size-1))
     y_pos = (y_size-9) + (sq_size* R);
-    x_pos = (x_size*10)-9;
+    x_pos = (x_size*sq_size)-9;
     gen_rect(x_pos, y_pos);
     size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
     act_arr(count) = randi(10);
     count = count + 1;
+    
+    x_pos = x_pos + (scrsz(4)/840);
+    y_pos = y_pos + (scrsz(4)/210);
+    [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+    text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+        'b', 'FontName', 'Verdana');
 end
 for (R = 1:(x_size-2))
-    x_pos = (x_size*10)-(sq_size* R)-9;
-    y_pos = (y_size*10)-9;
+    x_pos = (x_size*sq_size)-(sq_size* R)-9;
+    y_pos = (y_size*sq_size)-9;
     gen_rect(x_pos, y_pos);
     size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
     act_arr(count) = randi(10);
     count = count + 1;
+    
+    x_pos = x_pos + (scrsz(4)/840);
+    y_pos = y_pos + (scrsz(4)/210);
+    if (R == (x_size-2))
+        text(x_pos, y_pos, 'Fin', 'color', 'b',  'FontName', 'Verdana');
+    else
+        [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+        text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+            'b', 'FontName', 'Verdana');
+    end
 end
 
 % Assign outputs now that everything is set up

@@ -15,4 +15,5 @@ else
     % Use predetermined die roll
     cur_roll = die_arr(turn_counter);
 end
+
 end

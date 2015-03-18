@@ -12,7 +12,8 @@ function final_proj_gui()
 % was done because the final is all about coding in Matlab.
 
 clear;
-
+% Important for die, but also other stuff
+rng('shuffle');
 % Make figure based off of screen size
 scrsz = get(0,'ScreenSize');
 % Set figure handle, size of the gui, and keep the figure off until
@@ -63,6 +64,38 @@ name_3 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)- 125) 120 20],...
 name_4 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)- 150) 120 20],...
     'String','Player');
 
+% Text for user viewing during the game
+actions_text = uicontrol('Style','text', 'FontSize', 16, 'Position',...
+    [(scrsz(3)-(scrsz(3)/5)) (scrsz(4)-(scrsz(4)/12)) (scrsz(3)/8) (scrsz(4)/26)],...
+    'String','Ongoing Events');
+leader_text = uicontrol('Visible','off', 'Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/4.5)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','The Current Leader is:');
+leader_is_text = uicontrol('Visible','off', 'Style','text', 'FontSize', 10, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/3.7)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','Current Leader:');
+cur_player_text = uicontrol('Visible','off', 'Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/3)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','It is player # turn');
+cur_action_text = uicontrol('Visible','off', 'Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/2.3)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','Player # is moving 3 spaces');
+score_board = uicontrol('Style','text', 'FontSize', 14, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/1.6)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','Placements');
+place_1 = uicontrol('Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/1.47)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','1st Place is');
+place_2 = uicontrol('Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/1.39)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','2nd Place is');
+place_3 = uicontrol('Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/1.31)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','3rd Place is');
+place_4 = uicontrol('Style','text', 'FontSize', 12, 'Position',...
+    [(scrsz(3)-(scrsz(3)/4.1)) (scrsz(4)-(scrsz(4)/1.24)) (scrsz(3)/5) (scrsz(4)/26)],...
+    'String','4th Place is');
+
 % Board load button - Allows user to select board file.
 board_file = uicontrol('Style','pushbutton', 'String','Select Board File', 'Position',...
     [(scrsz(4)*.18) (scrsz(4)-200) 90 25],'Callback',{@board_load_callback})
@@ -80,7 +113,13 @@ pic_file = uicontrol('Style','pushbutton', 'String','Select pic File', 'Position
 % game initialization function.
 uicontrol('Style','pushbutton', 'String','Start Game', 'Position',...
     [(scrsz(3)/2) 100 60 25],'Callback',{@game_setup_callback, name_1,...
-    name_2, name_3, name_4, board_radio, die_radio, board_file, die_file, pic_file})
+    name_2, name_3, name_4, board_radio, die_radio, board_file, die_file,...
+    pic_file, leader_text, leader_is_text, cur_player_text, cur_action_text,...
+    place_1, place_2, place_3, place_4})
+
+%At any time you may reset the board
+uicontrol('Style','pushbutton', 'String','Reset', 'Position',...
+    [(scrsz(4)*.03) (.07*scrsz(4)) 60 25],'Callback',{@reset_button_callback})
           
 % Makes the gui visible now that it is set up.
 set(game_gui, 'Visible','on')
@@ -97,7 +136,9 @@ end
 % The player names also have an edit styled gui, and therefore we can grab
 % the strings.
 function game_setup_callback(src, ev, name_1, name_2, name_3, name_4,...
-    board_radio, die_radio, board_file, die_file, pic_file)
+    board_radio, die_radio, board_file, die_file, pic_file,...
+    leader_text, leader_is_text, cur_player_text, cur_action_text, place_1,...
+    place_2, place_3, place_4)
 
 % Turn off visibility from the buttons so  users can't conflict.
 set(board_radio, 'Visible','off');
@@ -119,10 +160,11 @@ board_file_name = board_file.UserData;
 % Set die file name
 die_file_name = die_file.UserData;
 % Error check for 'own' buttons pressed and directories not set
-if (isempty(board_file_name) & strcmp(get(get(board_radio,'SelectedObject'),'Tag'),'ub'))
+ub_check = strcmp(get(get(board_radio,'SelectedObject'),'Tag'),'ub');
+ud_check = strcmp(get(get(die_radio,'SelectedObject'),'Tag'),'ud');
+if (isempty(board_file_name) && ub_check)
     reset_gui();
-end
-if (isempty(die_file_name) & strcmp(get(get(die_radio,'SelectedObject'),'Tag'),'ud'))
+elseif (isempty(die_file_name) && ud_check)
     reset_gui();
 end
 
@@ -162,7 +204,9 @@ if (err_code == -1)
 end
 
 % Start the game
-start_game(player_names, size_arr, act_arr, die_rolls);
+start_game(player_names, size_arr, act_arr, die_rolls, fig_handle,...
+    leader_text, leader_is_text, cur_player_text, cur_action_text,...
+    place_1, place_2, place_3, place_4);
 
 end
 
@@ -198,6 +242,10 @@ function token_in_callback(src, ev)
 %the pushbutton which we are commandeering.
 pic_dur = uigetdir;
 set(src, 'UserData', pic_dur)
+end
+
+function reset_button_callback(src, ev)
+    reset_gui
 end
 
 %**********************************************************************
