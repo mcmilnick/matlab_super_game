@@ -7,32 +7,37 @@ function [err_code, player_info] = decide_action(player_info,...
 
 err_code = 0;
 switch cur_action
+    case -1
+        % Does nothing
     case 0
         % Start, does nothing
     case 1
-        player_info(player_turn).player_pos = 2;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos + 2;
     case 2
-        player_info(player_turn).player_pos = 4;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos + 4;
     case 3
         player_info(player_turn).player_pos = size_len;
     case 4
-        player_info(player_turn).player_pos = -2;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos - 2;
     case 5
-        player_info(player_turn).player_pos = -4;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos - 4;
     case 6
-        player_info(player_turn).player_pos = 1;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos + 1;
     case 7
         player_info(player_turn).skip_turn = 1;
     case 8
         player_info(player_turn).roll_again = 1;
     case 9
-        player_info(player_turn).player_pos = -3;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos - 3;
         player_info(player_turn).skip_turn = 1;
     case 10
-        player_info(player_turn).player_pos = 3;
+        player_info(player_turn).player_pos = player_info(player_turn).player_pos + 3;
         player_info(player_turn).roll_again = 1;
     case 100
-        % End, do nothing since we handle it by length.
+        % End, do nothing since we handle it by length. Handling by length
+        % avoids many edge cases and allows for more accurate error
+        % checking throughout the program starting when we read the board
+        % in.
     otherwise
         err_code = -1;
 end

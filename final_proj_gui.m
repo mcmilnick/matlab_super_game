@@ -19,7 +19,7 @@ scrsz = get(0,'ScreenSize');
 % Set figure handle, size of the gui, and keep the figure off until
 % everything is set
 game_gui = figure('Visible','off', 'Menu','none', 'Name','Board Game',...
-    'Position',[0 -50 scrsz(3) scrsz(4)]);
+    'Position',[0 -(scrsz(4)/15.36) scrsz(3) scrsz(4)]);
 % Keep aspect ratio with current window
 daspect([1,1,1]);
 % Rid the board of the defaut axis
@@ -27,7 +27,7 @@ axis off;
 
 % Create a button group for the board so they are grouped together and can
 % be accessed to find which one was chosen.
-board_radio = uibuttongroup('Visible','on', 'Position',[.1 .8 .1 1],...
+board_radio = uibuttongroup('Visible','on', 'Position',[.15 .8 .1 1],...
               'Units','Normalized');
       
 % Create radio buttons for choosing the board. There is a generic and user
@@ -40,7 +40,7 @@ uicontrol('Style','Radio', 'Parent',board_radio, 'HandleVisibility','off',...
 
 % Create a button group for the die so they are grouped together and can be
 % accessed to find which one was chosen.
-die_radio = uibuttongroup('Visible','on','Position',[.2 .8 .1 1]);
+die_radio = uibuttongroup('Visible','on','Position',[.25 .8 .1 1]);
               
 % Create radio buttons for choosing the die. There is a generic and user
 % die mode
@@ -55,14 +55,14 @@ uicontrol('Style','text',...
           'Position',[15 (scrsz(4)-50) 120 20]);
 
 % Now put in the edit spaces for entering names.
-name_1 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)-75) 120 20],...
-    'String','Player');
-name_2 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)- 100) 120 20],...
-    'String','Player');
-name_3 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)- 125) 120 20],...
-    'String','Player');
-name_4 = uicontrol('Style','edit', 'Position',[15 (scrsz(4)- 150) 120 20],...
-    'String','Player');
+name_1 = uicontrol('Style','edit', 'Position',...
+    [(scrsz(3)/91) (scrsz(4)-75) (scrsz(3)/11.38) (scrsz(4)/38.4)],'String','Player');
+name_2 = uicontrol('Style','edit', 'Position',...
+    [(scrsz(3)/91) (scrsz(4)- 100) (scrsz(3)/11.38) (scrsz(4)/38.4)], 'String','Player');
+name_3 = uicontrol('Style','edit', 'Position',...
+    [(scrsz(3)/91) (scrsz(4)- 125) (scrsz(3)/11.38) (scrsz(4)/38.4)],'String','Player');
+name_4 = uicontrol('Style','edit', 'Position',...
+    [(scrsz(3)/91) (scrsz(4)- 150) (scrsz(3)/11.38) (scrsz(4)/38.4)], 'String','Player');
 
 % Text for user viewing during the game
 actions_text = uicontrol('Style','text', 'FontSize', 16, 'Position',...
@@ -92,27 +92,27 @@ place_4 = uicontrol('Visible','off', 'Style','text', 'FontSize', 12, 'Position',
 
 % Board load button - Allows user to select board file.
 board_file = uicontrol('Style','pushbutton', 'String','Select Board File', 'Position',...
-    [(scrsz(4)*.18) (scrsz(4)-200) 90 25],'Callback',{@board_load_callback})
+    [(scrsz(4)*.27) (scrsz(4)-200) 90 25],'Callback',{@board_load_callback});
 
 % Die load button - Allows user to select die file.
 die_file = uicontrol('Style','pushbutton', 'String','Select Die File', 'Position',...
-    [(scrsz(4)*.36) (scrsz(4)-200) 90 25],'Callback',{@die_load_callback})
+    [(scrsz(4)*.45) (scrsz(4)-200) 90 25],'Callback',{@die_load_callback});
 
 % Select directory for tokens.
 pic_file = uicontrol('Style','pushbutton', 'String','Select pic File', 'Position',...
-    [(scrsz(4)*.03) (scrsz(4)-200) 90 25],'Callback',{@token_in_callback})
+    [(scrsz(4)*.03) (scrsz(4)-200) 90 25],'Callback',{@token_in_callback});
 
 %At any time you may reset the board
 reset_but = uicontrol('Style','pushbutton', 'String','Reset', 'Position',...
-    [(scrsz(4)*.03) (.07*scrsz(4)) 60 25],'Callback',{@reset_button_callback})
+    [(scrsz(3)/56.82) (.07*scrsz(4)) (scrsz(3)/22.76) (scrsz(4)/30.72)],'Callback',{@reset_button_callback});
 
 % Bring up the button to start the game. Has an associated callback
 % function. This goes to the game initialization function.
 uicontrol('Style','pushbutton', 'String','Start Game', 'Position',...
-    [(scrsz(3)/2) 100 60 25],'Callback',{@game_setup_callback, name_1,...
+    [(scrsz(3)/2) (scrsz(4)/7.68) (scrsz(3)/22.76) (scrsz(4)/30.72)],'Callback',{@game_setup_callback, name_1,...
     name_2, name_3, name_4, board_radio, die_radio, board_file, die_file,...
     pic_file, leader_text, leader_is_text, place_1, place_2, place_3,...
-    place_4, reset_but})
+    place_4, reset_but});
           
 % Makes the gui visible now that it is set up.
 set(game_gui, 'Visible','on')
@@ -189,11 +189,13 @@ if (err_code == -1)
 end
 
 %Insert tokens
+cur_fold = pwd;
 [err_code, fig_handle] = import_token(pic_file, player_names, length_play);
 if (err_code == -1)
     fprintf('Tokens did not load properly.\n');
     reset_gui();
 end
+cd(cur_fold);
 
 % Start the game
 start_game(player_names, size_arr, act_arr, die_rolls, fig_handle,...

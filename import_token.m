@@ -22,7 +22,7 @@ for(play_count = 1:num_players)
         str_same = strcmpi(player_new(1:(end-4)),player_names(play_count));
         % If they match
         if(str_same)
-            fig_handle{play_count} = set_token(player_new);
+            fig_handle{play_count} = imread(player_new);
         end
     end
     % All figure are set. If figure is not set for a given player, they get

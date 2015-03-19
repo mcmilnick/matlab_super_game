@@ -72,8 +72,10 @@ for (index = 1:sizex)
         text(x_pos, y_pos, 'Start', 'color', 'y',  'FontName', 'Verdana');
     elseif (act_arr(index) == 100)
         text(x_pos, y_pos, 'Finish', 'color', 'y', 'FontName', 'Verdana');
+    elseif (act_arr(index) == -1)
+        % Put nothing here
     else
-        [one_str, two_str] = strtok(string_arr(abs(act_arr(index))),' ');
+        [one_str, two_str] = strtok(string_arr(act_arr(index)),' ');
         text(x_pos, y_pos, char([one_str;two_str]), 'color',...
             'y', 'FontName', 'Verdana');
     end
@@ -120,13 +122,16 @@ for(R = 1:y_size)
     % Store size for later token movement
     size_arr(count,:) = [1, y_pos, sq_size, sq_size];
     % Store action for mapping to token placment
-    act_arr(count) = randi(10);
+    % Covers 1-10 and 11 corresponds to -1
+    act_arr(count) = randi(11);
     count = count + 1;
     
     x_pos = 1 + (scrsz(4)/840);
     y_pos = y_pos + (scrsz(4)/210);
     if (R == 1)
         text(x_pos, y_pos, 'Start', 'color', 'b',  'FontName', 'Verdana');
+    elseif (act_arr(R) == 11)
+        % Put nothing here
     else
         [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
         text(x_pos, y_pos, char([one_str;two_str]), 'color',...
@@ -138,41 +143,51 @@ for(R = 1:(x_size-1))
     y_pos = y_size - 9;
     gen_rect(x_pos, y_pos);
     size_arr(count,:) = [x_pos, y_pos sq_size, sq_size];
-    act_arr(count) = randi(10);
+    act_arr(count) = randi(11);
     count = count + 1;
     
     x_pos = x_pos + (scrsz(4)/840);
     y_pos = y_pos + (scrsz(4)/210);
-    [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
-    text(x_pos, y_pos, char([one_str;two_str]), 'color',...
-        'b', 'FontName', 'Verdana');
+    if (act_arr(R) == 11)
+        % Put nothing here
+    else
+        [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+        text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+            'b', 'FontName', 'Verdana');
+    end
 end
 for (R = 1:(y_size-1))
     y_pos = (y_size-9) + (sq_size* R);
     x_pos = (x_size*sq_size)-9;
     gen_rect(x_pos, y_pos);
     size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
-    act_arr(count) = randi(10);
+    act_arr(count) = randi(11);
     count = count + 1;
     
     x_pos = x_pos + (scrsz(4)/840);
     y_pos = y_pos + (scrsz(4)/210);
-    [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
-    text(x_pos, y_pos, char([one_str;two_str]), 'color',...
-        'b', 'FontName', 'Verdana');
+    if (act_arr(R) == 11)
+        % Put nothing here
+    else
+        [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
+        text(x_pos, y_pos, char([one_str;two_str]), 'color',...
+            'b', 'FontName', 'Verdana');
+    end
 end
 for (R = 1:(x_size-2))
     x_pos = (x_size*sq_size)-(sq_size* R)-9;
     y_pos = (y_size*sq_size)-9;
     gen_rect(x_pos, y_pos);
     size_arr(count,:) = [x_pos, y_pos, sq_size, sq_size];
-    act_arr(count) = randi(10);
+    act_arr(count) = randi(11);
     count = count + 1;
     
     x_pos = x_pos + (scrsz(4)/840);
     y_pos = y_pos + (scrsz(4)/210);
     if (R == (x_size-2))
         text(x_pos, y_pos, 'Fin', 'color', 'b',  'FontName', 'Verdana');
+    elseif (act_arr(R) == 11)
+        % Put nothing here
     else
         [one_str, two_str] = strtok(string_arr(abs(act_arr(R))),' ');
         text(x_pos, y_pos, char([one_str;two_str]), 'color',...

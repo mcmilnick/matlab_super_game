@@ -44,120 +44,82 @@ end
 set(leader_text, 'Visible','on');
 
 turn_counter = 1;
+continue_actions = 1;
 % Keep game going until all players are done
 while(sum([player_info.game_done]) ~= player_size)
     %Cycle through players
     for(player_turn = 1:player_size)
         % Roll again is set at the start and after the user goes. It is
         % reset if they get a roll again.
-        while(player_info(player_turn).roll_again && ~player_info(player_turn).game_done)
+        if(~player_info(player_turn).game_done)
             % Always check for reset button
             if(~isempty(reset_but.UserData))
                 return;
             end
-            % To be reset later
-            player_info(player_turn).roll_again = 0;
-            if (~player_info(player_turn).skip_turn)
-                [cur_roll] = roll_die(die_rolls, player_turn,turn_counter);
-                player_info(player_turn).player_pos = player_info(player_turn).player_pos + cur_roll;
-                %Check the action at the space. If past finish, set action
-                %to go to fin so check is not duplicated.
-                if(player_info(player_turn).player_pos >= length(act_arr))
-                    cur_action = 3;
-                    player_info(player_turn).player_loc = size_arr(end);
-                    set(leader_text, 'Visible','on', 'String', ['Player ' num2str(player_turn) ' is done.']);
-                else
-                    cur_action = act_arr(player_info(player_turn).player_pos);
-                    set(leader_text, 'Visible','on', 'String', ['Player ' num2str(player_turn) ' got a ' num2str(cur_action)]);
-                    % Find the new coordinates specified by how many squares in you are.
-                    player_info(player_turn).player_loc = size_arr(player_info(player_turn).player_pos);
-                end
-                [tok_handle{player_turn}, text_handle{player_turn}] =...
-                    update_token(size_arr, player_info, fig_handle,...
-                    player_turn, tok_handle, text_handle);
-            
-                % Store all actions for a player
-                player_info(player_turn).actions(turn_counter) = cur_action;
-                % Pass in the action and update the player struct. The same struct is passed
-                % in and out. In Matlab there is no passing by reference unless a handle.
-                % Normally bad style, but in recent versions is an optimization where
-                % passing the same variable in and out does not create a copy and acts
-                % like passing by reference(fast, cool little secret).
-                [err_code, player_info] = decide_action(player_info, cur_action, size_len, player_turn);
-                if(err_code == -1)
-                    fprintf('Your board contains an illegal action.\n');
-                end
-                [tok_handle{player_turn}, text_handle{player_turn}] =...
-                    update_token(size_arr, player_info, fig_handle,...
-                    player_turn, tok_handle, text_handle);
-                
-                % Check if player has reached the end
-                if (player_info(player_turn).player_pos >= size_len)
-                    player_info(player_turn).game_done = 1;
-                    % Show their placement
-                    update_placement(placement_num, player_turn, place_1,...
-                        place_2, place_3, place_4, turn_counter);
-                    placement_num = placement_num + 1;
-                end
-            else
+            if (player_info(player_turn).skip_turn)
                 % Reset skip turn
                 player_info(player_turn).skip_turn = 0;
+            else
+                % Allow first roll
+                player_info(player_turn).roll_again = 1;
+                while(continue_actions)
+                    if (player_info(player_turn).roll_again == 1)
+                        % We only roll on start or on a neutral space
+                        [cur_roll] = roll_die(die_rolls, player_turn,turn_counter);
+                        player_info(player_turn).player_pos = player_info(player_turn).player_pos + cur_roll;
+                    end
+                    % Must be reset by the space or start of next turn.
+                    player_info(player_turn).roll_again = 0;
+                    %Check the action at the space. If past finish, set action
+                    %to go to fin so check is not duplicated.
+                    if(player_info(player_turn).player_pos >= length(act_arr))
+                        cur_action = 3;
+                        player_info(player_turn).player_loc = size_arr(end);
+                        set(leader_text, 'Visible','on', 'String', ['Player ' num2str(player_turn) ' is done.']);
+                    else
+                        cur_action = act_arr(player_info(player_turn).player_pos);
+                        set(leader_text, 'Visible','on', 'String', ['Player ' num2str(player_turn) ' hit a ' num2str(cur_action)]);
+                        % Find the new coordinates specified by how many squares in you are.
+                        player_info(player_turn).player_loc = size_arr(player_info(player_turn).player_pos);
+                    end
+                    % Wait for realistic feels
+                    
+                    [tok_handle{player_turn}, text_handle{player_turn}] =...
+                        update_token(size_arr, player_info, fig_handle,...
+                        player_turn, tok_handle, text_handle);
+                    uiwait(gcf,1);
+                    
+                    % Store all actions for a player
+                    player_info(player_turn).actions(turn_counter) = cur_action;
+                    % Pass in the action and update the player struct. The same struct is passed
+                    % in and out. In Matlab there is no passing by reference unless a handle.
+                    % Normally bad style, but in recent versions is an optimization where
+                    % passing the same variable in and out does not create a copy and acts
+                    % like passing by reference(fast, cool little secret).
+                    [err_code, player_info] = decide_action(player_info, cur_action, size_len, player_turn);
+                    if(err_code == -1)
+                        fprintf('Your board contains an illegal action.\n');
+                    end
+                    
+                    [tok_handle{player_turn}, text_handle{player_turn}] =...
+                        update_token(size_arr, player_info, fig_handle,...
+                        player_turn, tok_handle, text_handle);
+                    uiwait(gcf,1);
+                    % Check if player has reached a spot of no actions(or unknown spot).
+                    [continue_actions, player_info, placement_num] = ...
+                        continue_check(player_info, act_arr, player_turn,...
+                        err_code, place_1, place_2, place_3, place_4,...
+                        turn_counter, placement_num, size_len);
+                end
+                % We may move on since they did not land on a special spot
+                continue_actions = 1;           
             end
         end
-        player_info(player_turn).roll_again = 1;
     end
     % Update turn counter
     turn_counter = turn_counter + 1;
-    % After each player update the leader and wait for realistic feels
+    % After each player update the leader
     check_leader(player_info, leader_is_text, player_size, player_turn);
-    uiwait(gcf,1);
-end
-
-end
-
-
-function [tok_handle, text_handle] = update_token(size_arr, player_info,...
-    fig_handle, player_turn, tok_handle, text_handle)
-
-if (player_info(player_turn).player_pos > length(size_arr))
-    player_info(player_turn).player_pos = length(size_arr)
-end
-
-delete(tok_handle{player_turn});
-delete(text_handle{player_turn});
-
-if (isempty(fig_handle{player_turn}))
-    %Update with default token
-    color_mat = [0.5 0.5 0.1];
-    scrsz = get(0,'ScreenSize');
-    cur_coord = size_arr(player_info(player_turn).player_pos,:);
-    x_pos = cur_coord(1) + (scrsz(4)/420);
-    y_pos = cur_coord(2) + (scrsz(3)/200);
-    tok_handle = rectangle('Position',cur_coord, 'FaceColor', color_mat,...
-        'EdgeColor', [0.9 0.1 0.1], 'LineWidth', 2);
-    text_handle = text(x_pos, y_pos, ['P' num2str(player_turn)], 'color',...
-        'b', 'FontName', 'Verdana');
-else
-    %Use custom token
-end
-
-end
-
-function update_placement(placement_num, player_turn, place_1, place_2,...
-    place_3, place_4, turn_counter)
-
-switch placement_num
-    case 1
-        set(place_1, 'Visible','on', 'String',['Player ' num2str(player_turn) ' achieved 1st in ' num2str(turn_counter) ' turns.']);
-    case 2
-        set(place_2, 'Visible','on', 'String',['Player ' num2str(player_turn) ' achieved 2nd in ' num2str(turn_counter) ' turns.']);
-    case 3
-        set(place_3, 'Visible','on', 'String',['Player ' num2str(player_turn) ' achieved 3rd in ' num2str(turn_counter) ' turns.']);
-    case 4
-        set(place_4, 'Visible','on', 'String',['Player ' num2str(player_turn) ' achieved 4th in ' num2str(turn_counter) ' turns.']);
-    otherwise
-        fprintf('This player does not exist.\n');
-        
 end
 
 end
